@@ -1,0 +1,252 @@
+{
+  "remove_train": {
+    "threshold": 0.3,
+    "removed_count": 5,
+    "removed_ids": [
+      "16aihxrHTH3I",
+      "7DOnnFs86L8o",
+      "MMH1uM7wltAr",
+      "qbE8PJ1yZYQB",
+      "wRGO69GjV1v6"
+    ]
+  },
+  "mice": {},
+  "train_quantitative": {
+    "quantitative": {
+      "missing": {
+        "EHQ_EHQ_Total": 12,
+        "ColorVision_CV_Score": 22,
+        "APQ_P_APQ_P_CP": 11,
+        "APQ_P_APQ_P_ID": 11,
+        "APQ_P_APQ_P_INV": 11,
+        "APQ_P_APQ_P_OPD": 11,
+        "APQ_P_APQ_P_PM": 11,
+        "APQ_P_APQ_P_PP": 11,
+        "SDQ_SDQ_Conduct_Problems": 5,
+        "SDQ_SDQ_Difficulties_Total": 5,
+        "SDQ_SDQ_Emotional_Problems": 5,
+        "SDQ_SDQ_Externalizing": 5,
+        "SDQ_SDQ_Generating_Impact": 5,
+        "SDQ_SDQ_Hyperactivity": 5,
+        "SDQ_SDQ_Internalizing": 5,
+        "SDQ_SDQ_Peer_Problems": 5,
+        "SDQ_SDQ_Prosocial": 5,
+        "MRI_Track_Age_at_Scan": 359
+      },
+      "strategy": {
+        "EHQ_EHQ_Total": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 12,
+          "global_median": 77.8
+        },
+        "ColorVision_CV_Score": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 22,
+          "global_median": 14.0
+        },
+        "APQ_P_APQ_P_CP": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 3.0
+        },
+        "APQ_P_APQ_P_ID": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 13.0
+        },
+        "APQ_P_APQ_P_INV": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 40.0
+        },
+        "APQ_P_APQ_P_OPD": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 18.0
+        },
+        "APQ_P_APQ_P_PM": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 16.0
+        },
+        "APQ_P_APQ_P_PP": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 11,
+          "global_median": 26.0
+        },
+        "SDQ_SDQ_Conduct_Problems": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 2.0
+        },
+        "SDQ_SDQ_Difficulties_Total": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 12.0
+        },
+        "SDQ_SDQ_Emotional_Problems": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 2.0
+        },
+        "SDQ_SDQ_Externalizing": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 8.0
+        },
+        "SDQ_SDQ_Generating_Impact": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 4.0
+        },
+        "SDQ_SDQ_Hyperactivity": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 6.0
+        },
+        "SDQ_SDQ_Internalizing": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 4.0
+        },
+        "SDQ_SDQ_Peer_Problems": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 2.0
+        },
+        "SDQ_SDQ_Prosocial": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 5,
+          "global_median": 8.0
+        },
+        "MRI_Track_Age_at_Scan": {
+          "group": [
+            "Basic_Demos_Study_Site",
+            "Sex_F"
+          ],
+          "group_median_used": 359,
+          "global_median": 10.739676
+        }
+      },
+      "inserted_indicators": 504
+    }
+  },
+  "train_categorical": {
+    "categorical": {
+      "missing": {
+        "Basic_Demos_Enroll_Year": 0,
+        "Basic_Demos_Study_Site": 0,
+        "PreInt_Demos_Fam_Child_Ethnicity": 43,
+        "PreInt_Demos_Fam_Child_Race": 54,
+        "MRI_Track_Scan_Location": 3,
+        "Barratt_Barratt_P1_Edu": 15,
+        "Barratt_Barratt_P1_Occ": 30,
+        "Barratt_Barratt_P2_Edu": 194,
+        "Barratt_Barratt_P2_Occ": 217,
+        "Sex_F": 0
+      },
+      "unknown_added": {},
+      "strip_changed": 0,
+      "indicators": 556
+    }
+  },
+  "train_connectome": {
+    "connectome": {
+      "clamped_values": 0,
+      "nan_filled": 0
+    }
+  },
+  "final_quant_train": {
+    "final_quant_filled": {
+      "EHQ_EHQ_Total": 0,
+      "ColorVision_CV_Score": 0,
+      "APQ_P_APQ_P_CP": 0,
+      "APQ_P_APQ_P_ID": 0,
+      "APQ_P_APQ_P_INV": 0,
+      "APQ_P_APQ_P_OPD": 0,
+      "APQ_P_APQ_P_PM": 0,
+      "APQ_P_APQ_P_PP": 0,
+      "SDQ_SDQ_Conduct_Problems": 0,
+      "SDQ_SDQ_Difficulties_Total": 0,
+      "SDQ_SDQ_Emotional_Problems": 0,
+      "SDQ_SDQ_Externalizing": 0,
+      "SDQ_SDQ_Generating_Impact": 0,
+      "SDQ_SDQ_Hyperactivity": 0,
+      "SDQ_SDQ_Internalizing": 0,
+      "SDQ_SDQ_Peer_Problems": 0,
+      "SDQ_SDQ_Prosocial": 0,
+      "MRI_Track_Age_at_Scan": 0
+    }
+  },
+  "final_cat_train": {
+    "final_cat_filled": {
+      "Basic_Demos_Enroll_Year": 0,
+      "Basic_Demos_Study_Site": 0,
+      "PreInt_Demos_Fam_Child_Ethnicity": 0,
+      "PreInt_Demos_Fam_Child_Race": 0,
+      "MRI_Track_Scan_Location": 0,
+      "Barratt_Barratt_P1_Edu": 0,
+      "Barratt_Barratt_P1_Occ": 0,
+      "Barratt_Barratt_P2_Edu": 0,
+      "Barratt_Barratt_P2_Occ": 0,
+      "Sex_F": 0
+    }
+  },
+  "solutions_cleaning": {
+    "solutions": {
+      "duplicates_dropped": 0,
+      "strip_changed": 0
+    }
+  }
+}

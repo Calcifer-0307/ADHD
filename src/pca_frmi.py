@@ -15,7 +15,7 @@ from sklearn.decomposition import PCA
 
 print("[1/6] Loading sample data...")
 try:
-    data_sample = pd.read_csv('cleaned_train_connectome.csv', nrows=1000)
+    data_sample = pd.read_csv('data/processed/cleaned_train_connectome.csv', nrows=1000)
     print(f"  ✓ Loaded: {data_sample.shape[0]} samples, {data_sample.shape[1]} features")
 except Exception as e:
     print(f"  ✗ Error: {e}")
@@ -146,7 +146,7 @@ all_chunks = []
 total_processed = 0
 
 try:
-    for chunk_idx, chunk in enumerate(pd.read_csv('cleaned_train_connectome.csv', 
+    for chunk_idx, chunk in enumerate(pd.read_csv('data/processed/cleaned_train_connectome.csv', 
                                                   chunksize=chunksize)):
         chunk_ids = chunk['participant_id']
         chunk_features = chunk.drop('participant_id', axis=1)
@@ -172,7 +172,7 @@ except Exception as e:
 # 合并保存
 result_df = pd.concat(all_chunks, ignore_index=True)
 variance_percent = np.sum(pca_final.explained_variance_ratio_) * 100
-output_file = f'fMRI_PCA_{recommended_dim}d_{int(variance_percent)}p.csv'
+output_file = f'data/processed/fMRI_PCA_{recommended_dim}d_{int(variance_percent)}p.csv'
 result_df.to_csv(output_file, index=False)
 
 print("\n" + "="*70)

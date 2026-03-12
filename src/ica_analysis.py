@@ -1,8 +1,5 @@
 print("=== fMRI Data ICA Analysis ===")
 
-import sys
-sys.path.append('D:\\PythonLibs')
-
 import pandas as pd
 import numpy as np
 from sklearn.decomposition import FastICA
@@ -11,16 +8,20 @@ import matplotlib.pyplot as plt
 
 print("\n[1/4] Loading data...")
 
-pca_file = 'fMRI_PCA_499d_84p.csv'
-df_pca = pd.read_csv(pca_file)
-print(f"  PCA data: {df_pca.shape}")
+connectome_file = 'data/processed/cleaned_train_connectome.csv'
+df_connectome = pd.read_csv(connectome_file)
+print(f"  Connectome data: {df_connectome.shape}")
 
 # 加载标签
-df_labels = pd.read_excel('TRAINING_SOLUTIONS.xlsx')
+df_labels = pd.read_csv('data/processed/cleaned_train_solutions.csv')
 print(f"  Labels: {df_labels.shape}")
 
 # 合并
-data = pd.merge(df_pca, df_labels, on='participant_id')
+data = pd.merge(df_connectome, df_labels, on='participant_id')
+
+# Set random seed for reproducibility
+np.random.seed(42)
+
 X = data.drop(['participant_id', 'Sex_F'], axis=1).values
 y = data['Sex_F'].values
 

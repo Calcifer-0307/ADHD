@@ -62,6 +62,30 @@ def clean_connectome(df):
     audit = {"connectome": {"clamped_values": int(changed), "nan_filled": int((clamped_df.isna().sum().sum()))}}
     return cleaned, audit
 
+def clean_solutions(df):
+    """
+    Clean the solutions dataframe:
+    - Strip whitespace from participant_id
+    - Remove duplicates
+    - Ensure numeric types for outcome columns
+    """
+    audit = {"solutions": {"duplicates_dropped": 0, "strip_changed": 0}}
+    
+    if "participant_id" in df.columns:
+        # Strip whitespace
+        s = df["participant_id"].astype(str)
+        before = s.copy()
+        s = s.str.strip()
+        audit["solutions"]["strip_changed"] = int((before != s).sum())
+        df["participant_id"] = s
+        
+        # Drop duplicates
+        before_len = len(df)
+        df = df.drop_duplicates(subset=["participant_id"], keep="first")
+        audit["solutions"]["duplicates_dropped"] = before_len - len(df)
+        
+    return df, audit
+
 def _norm_missing_tokens(df):
     tokens = {"", "na", "n/a", "null", "none", "nan"}
     df2 = df.copy()
@@ -256,46 +280,46 @@ def finalize_no_nan_cat(df):
             filled[c] = before - after
     return df2, {"final_cat_filled": filled}
 
-def one_hot_encode(train_cat_df, test_cat_df):
+def one_hot_encode(train_cat_df):
+    """
+    Perform one-hot encoding on categorical columns.
+    Ensures that numeric columns intended as categorical (e.g., site ID, Year) are treated as strings before encoding.
+    """
+    # Identify base columns (excluding ID and missing indicators)
     train_cols = [c for c in train_cat_df.columns if c != "participant_id"]
-    test_cols = [c for c in test_cat_df.columns if c != "participant_id"]
-    common_cols = sorted(set(train_cols).intersection(set(test_cols)))
-    base_cols = [c for c in common_cols if not c.endswith("__missing_ind")]
-    ind_cols = [c for c in common_cols if c.endswith("__missing_ind")]
-    train_cat_df["___split"] = "train"
-    test_cat_df["___split"] = "test"
-    comb = pd.concat([train_cat_df[["participant_id"] + base_cols + ind_cols + ["___split"]], test_cat_df[["participant_id"] + base_cols + ind_cols + ["___split"]]], ignore_index=True)
-    dummies = pd.get_dummies(comb[base_cols], dtype=int)
-    comb_out = pd.concat([comb[["participant_id", "___split"]], dummies, comb[ind_cols]], axis=1)
-    tr_final = comb_out[comb_out["___split"] == "train"].drop(columns=["___split"])
-    te_final = comb_out[comb_out["___split"] == "test"].drop(columns=["___split"])
-    return tr_final, te_final, {"columns": base_cols, "indicator_columns": ind_cols, "features": list(dummies.columns)}
+    base_cols = [c for c in train_cols if not c.endswith("__missing_ind")]
+    ind_cols = [c for c in train_cols if c.endswith("__missing_ind")]
+    
+    # Explicitly cast base columns to string to ensure get_dummies treats them as categorical
+    # This prevents numeric categorical variables (like Year 2015, Site 1) from being ignored or treated as continuous
+    encoded_df = pd.get_dummies(train_cat_df[base_cols].astype(str), dtype=int)
+    
+    # Concatenate: participant_id + one-hot features + missing indicators
+    comb_out = pd.concat([train_cat_df[["participant_id"]], encoded_df, train_cat_df[ind_cols]], axis=1)
+    
+    return comb_out, {"columns": base_cols, "indicator_columns": ind_cols, "features": list(encoded_df.columns)}
 
-def preprocess(root=".", outdir="cleaned_data", use_mice=True, mice_min_ratio=0.05, mice_max_ratio=0.4):
+def preprocess(root=".", outdir="cleaned_data", use_mice=True, mice_min_ratio=0.05, mice_max_ratio=0.4, input_dir="data/raw"):
     root = os.path.abspath(root)
+    input_path = os.path.join(root, input_dir)
     os.makedirs(os.path.join(root, outdir), exist_ok=True)
-    train_q = read_xlsx(os.path.join(root, "TRAIN_NEW", "TRAIN_QUANTITATIVE_METADATA_new.xlsx"), "training_combined")
-    train_cat = read_xlsx(os.path.join(root, "TRAIN_NEW", "TRAIN_CATEGORICAL_METADATA_new.xlsx"), "training_combined")
-    train_sol = read_xlsx(os.path.join(root, "TRAIN_NEW", "TRAINING_SOLUTIONS.xlsx"), "training_combined")
-    train_fc = pd.read_csv(os.path.join(root, "TRAIN_NEW", "TRAIN_FUNCTIONAL_CONNECTOME_MATRICES_new_36P_Pearson.csv"))
-    test_q_path = os.path.join(root, "TEST", "TEST_QUANTITATIVE_METADATA.xlsx")
-    test_cat_path = os.path.join(root, "TEST", "TEST_CATEGORICAL.xlsx")
-    test_fc_path = os.path.join(root, "TEST", "TEST_FUNCTIONAL_CONNECTOME_MATRICES.csv")
-    if os.path.exists(test_q_path):
-        test_q = read_xlsx(test_q_path, "Sheet1")
-    else:
-        test_q = pd.DataFrame(columns=train_q.columns)
-    if os.path.exists(test_cat_path):
-        test_cat = read_xlsx(test_cat_path, "Sheet1")
-    else:
-        test_cat = pd.DataFrame(columns=train_cat.columns)
-    if os.path.exists(test_fc_path):
-        test_fc = pd.read_csv(test_fc_path)
-    else:
-        test_fc = pd.DataFrame(columns=train_fc.columns)
+    
+    # Check if input_dir exists, if not fallback to TRAIN_NEW in root (legacy)
+    train_q_path = os.path.join(input_path, "TRAIN_QUANTITATIVE_METADATA_new.xlsx")
+    if not os.path.exists(train_q_path):
+        input_path = os.path.join(root, "TRAIN_NEW")
+
+    train_q = read_xlsx(os.path.join(input_path, "TRAIN_QUANTITATIVE_METADATA_new.xlsx"), "training_combined")
+    train_cat = read_xlsx(os.path.join(input_path, "TRAIN_CATEGORICAL_METADATA_new.xlsx"), "training_combined")
+    train_sol = read_xlsx(os.path.join(input_path, "TRAINING_SOLUTIONS.xlsx"), "training_combined")
+    train_fc = pd.read_csv(os.path.join(input_path, "TRAIN_FUNCTIONAL_CONNECTOME_MATRICES_new_36P_Pearson.csv"))
+    
+    # Clean solutions
+    train_sol, audit_sol = clean_solutions(train_sol)
+    
     train_cat = train_cat.merge(train_sol[["participant_id", "Sex_F"]], on="participant_id", how="left")
     train_q, train_cat, train_fc, train_sol, audit_remove_train = filter_ids_by_missing(train_q, train_cat, train_fc, train_sol, 0.3)
-    test_q, test_cat, test_fc, audit_remove_test = filter_ids_by_missing_test(test_q, test_cat, test_fc, 0.3)
+    
     group_cols = []
     if "Basic_Demos_Study_Site" in train_cat.columns:
         group_cols.append("Basic_Demos_Study_Site")
@@ -306,53 +330,52 @@ def preprocess(root=".", outdir="cleaned_data", use_mice=True, mice_min_ratio=0.
     pred_cols = []
     if use_mice:
         mice_cols, pred_cols = _select_mice_columns(train_q, min_ratio=mice_min_ratio, max_ratio=mice_max_ratio)
-        train_q, test_q, mice_info = fit_apply_mice(train_q, test_q, mice_cols, pred_cols)
+        train_q, _, mice_info = fit_apply_mice(train_q, pd.DataFrame(columns=train_q.columns), mice_cols, pred_cols)
         mice_audit = {"selected_cols": mice_info["mice_cols"], "predictors": mice_info["predictors"], "min_ratio": mice_min_ratio, "max_ratio": mice_max_ratio}
     cleaned_train_q, audit_train_q, group_stats, global_medians = fill_quantitative(train_q, train_cat, group_cols, skip_fill_cols=mice_cols)
-    cleaned_test_q, audit_test_q = apply_quantitative(test_q, test_cat.merge(train_sol[["participant_id", "Sex_F"]], on="participant_id", how="left"), group_cols, group_stats, global_medians, skip_fill_cols=mice_cols)
     cleaned_train_q, final_q_train = finalize_no_nan_quant(cleaned_train_q, global_medians)
-    cleaned_test_q, final_q_test = finalize_no_nan_quant(cleaned_test_q, global_medians)
+    
     cleaned_train_cat, audit_train_cat = fill_categorical(train_cat)
-    cleaned_test_cat, audit_test_cat = fill_categorical(test_cat)
     cleaned_train_cat, final_cat_train = finalize_no_nan_cat(cleaned_train_cat)
-    cleaned_test_cat, final_cat_test = finalize_no_nan_cat(cleaned_test_cat)
+    
     cleaned_train_fc, audit_train_fc = clean_connectome(train_fc)
-    cleaned_test_fc, audit_test_fc = clean_connectome(test_fc)
-    tr_ohe, te_ohe, ohe_info = one_hot_encode(cleaned_train_cat, cleaned_test_cat)
+    
+    tr_ohe, ohe_info = one_hot_encode(cleaned_train_cat)
+    
     cleaned_train_q.to_csv(os.path.join(root, outdir, "cleaned_train_quantitative.csv"), index=False)
-    cleaned_test_q.to_csv(os.path.join(root, outdir, "cleaned_test_quantitative.csv"), index=False)
-    cleaned_train_cat.to_csv(os.path.join(root, outdir, "cleaned_train_categorical.csv"), index=False)
-    cleaned_test_cat.to_csv(os.path.join(root, outdir, "cleaned_test_categorical.csv"), index=False)
+    # cleaned_train_cat.to_csv(os.path.join(root, outdir, "cleaned_train_categorical.csv"), index=False)
     cleaned_train_fc.to_csv(os.path.join(root, outdir, "cleaned_train_connectome.csv"), index=False)
-    cleaned_test_fc.to_csv(os.path.join(root, outdir, "cleaned_test_connectome.csv"), index=False)
     tr_ohe.to_csv(os.path.join(root, outdir, "cleaned_train_categorical_ohe.csv"), index=False)
-    te_ohe.to_csv(os.path.join(root, outdir, "cleaned_test_categorical_ohe.csv"), index=False)
+    train_sol.to_csv(os.path.join(root, outdir, "cleaned_train_solutions.csv"), index=False)
+    
     with open(os.path.join(root, outdir, "ohe_categories.json"), "w", encoding="utf-8") as fh:
         json.dump(ohe_info, fh, ensure_ascii=False, indent=2)
-    audit = {"remove_train": audit_remove_train, "remove_test": audit_remove_test, "mice": mice_audit, "train_quantitative": audit_train_q, "test_quantitative": audit_test_q, "train_categorical": audit_train_cat, "test_categorical": audit_test_cat, "train_connectome": audit_train_fc, "test_connectome": audit_test_fc, "final_quant_train": final_q_train, "final_quant_test": final_q_test, "final_cat_train": final_cat_train, "final_cat_test": final_cat_test}
+        
+    audit = {"remove_train": audit_remove_train, "mice": mice_audit, "train_quantitative": audit_train_q, "train_categorical": audit_train_cat, "train_connectome": audit_train_fc, "final_quant_train": final_q_train, "final_cat_train": final_cat_train, "solutions_cleaning": audit_sol}
     os.makedirs(os.path.join(root, "reports"), exist_ok=True)
     with open(os.path.join(root, "reports", "cleaning_audit.json"), "w", encoding="utf-8") as fh:
         json.dump(audit, fh, ensure_ascii=False, indent=2)
-    return {"train_q": cleaned_train_q, "test_q": cleaned_test_q, "train_cat": cleaned_train_cat, "test_cat": cleaned_test_cat, "train_fc": cleaned_train_fc, "test_fc": cleaned_test_fc, "train_ohe": tr_ohe, "test_ohe": te_ohe, "ohe_info": ohe_info, "audit": audit}
+    return {"train_q": cleaned_train_q, "train_cat": cleaned_train_cat, "train_fc": cleaned_train_fc, "train_ohe": tr_ohe, "ohe_info": ohe_info, "audit": audit}
 
 def run_preprocessing(input_dir="data/raw", output_dir="data/processed", categorical_cols=None):
     """
     对齐脚本入口的接口：
-    - 当前清洗管线读取 TRAIN_NEW/TEST 目录中的原始文件，input_dir 参数保留兼容但不参与处理
+    - 当前清洗管线读取 data/raw 目录中的原始文件 (TRAIN_NEW compatible)
     - 输出目录统一为 data/processed，返回绝对路径字符串
     """
-    preprocess(root=".", outdir=output_dir, use_mice=True, mice_min_ratio=0.05, mice_max_ratio=0.4)
+    preprocess(root=".", outdir=output_dir, use_mice=True, mice_min_ratio=0.05, mice_max_ratio=0.4, input_dir=input_dir)
     return os.path.join(os.path.abspath("."), output_dir)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default=".")
     parser.add_argument("--outdir", default="cleaned_data")
+    parser.add_argument("--input_dir", default="data/raw")
     parser.add_argument("--use_mice", action="store_true")
     parser.add_argument("--mice_min_ratio", type=float, default=0.05)
     parser.add_argument("--mice_max_ratio", type=float, default=0.4)
     args = parser.parse_args()
-    preprocess(root=args.root, outdir=args.outdir, use_mice=args.use_mice, mice_min_ratio=args.mice_min_ratio, mice_max_ratio=args.mice_max_ratio)
+    preprocess(root=args.root, outdir=args.outdir, use_mice=args.use_mice, mice_min_ratio=args.mice_min_ratio, mice_max_ratio=args.mice_max_ratio, input_dir=args.input_dir)
     print(os.path.join(os.path.abspath(args.root), args.outdir))
 
 if __name__ == "__main__":
