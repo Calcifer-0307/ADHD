@@ -36,11 +36,11 @@ def train_and_evaluate_models(X, y):
 
     # 输出分类报告
     print("SVC Classification Report:")
-    print(classification_report(y_test, y_pred_svc))
+    print(classification_report(y_test, y_pred_svc, zero_division=0))
     print("RF Classification Report:")
-    print(classification_report(y_test, y_pred_rf))
+    print(classification_report(y_test, y_pred_rf, zero_division=0))
     print("XGBoost Classification Report:")
-    print(classification_report(y_test, y_pred_xgboost))
+    print(classification_report(y_test, y_pred_xgboost, zero_division=0))
     
     return {
         "svc": svc_model,
@@ -54,5 +54,7 @@ def train_and_evaluate_models(X, y):
     }
 
 if __name__ == "__main__":
-   X, y = get_data()
-   train_and_evaluate_models(X, y)
+   X, y_1, y_2 = get_data()
+   train_and_evaluate_models(X, y_1)
+   train_and_evaluate_models(X, y_2)
+   

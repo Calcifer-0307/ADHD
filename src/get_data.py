@@ -19,22 +19,27 @@ def get_data():
 
     # 遍历patient id列表，读取每个患者的categorical data、quantitative data、connectome data，合并为一个特征向量
     X = []
-    y = []
+    y1 = [] # ADHD_Outcome
+    y2 = [] # Sex_F
+    drop_cols = ["participant_id", "Sex_F", "Basic_Demos_Enroll_Year"]
     for pid in patient_ids:
         try:
-            cat_data = categorical_df[categorical_df["participant_id"] == pid].drop(columns=["participant_id"]).values.flatten()
+            cat_data = categorical_df[categorical_df["participant_id"] == pid].drop(columns=drop_cols).values.flatten()
             quant_data = quantitative_df[quantitative_df["participant_id"] == pid].drop(columns=["participant_id"]).values.flatten()
             conn_data = connectome_df[connectome_df["participant_id"] == pid].drop(columns=["participant_id"]).values.flatten()
 
             combined_features = np.concatenate([cat_data, quant_data, conn_data])
             
-            label = labels_df[labels_df["participant_id"] == pid]["ADHD_Outcome"].values[0]
+            label1_val = labels_df[labels_df["participant_id"] == pid]["ADHD_Outcome"].values[0]
+            label2_val = labels_df[labels_df["participant_id"] == pid]["Sex_F"].values[0]
             X.append(combined_features)
-            y.append(label)
+            y1.append(label1_val)
+            y2.append(label2_val)
         except IndexError:
             continue
             
     X = np.array(X)
-    y = np.array(y)
+    y1 = np.array(y1)
+    y2 = np.array(y2)
 
-    return X, y
+    return X, y1, y2
