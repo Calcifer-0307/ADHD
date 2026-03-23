@@ -57,4 +57,3 @@ if __name__ == "__main__":
    X, y_1, y_2 = get_data()
    train_and_evaluate_models(X, y_1)
    train_and_evaluate_models(X, y_2)
-   

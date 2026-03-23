@@ -11,15 +11,18 @@ ADHD_Female_Brain_Project/
 │   └── processed/           # 清洗后的文件与 PCA 特征 (自动生成)
 ├── notebooks/               # 探索性实验
 │   └── 01_EDA_Visualization.ipynb
+├── reports/                 # 实验报告和混淆矩阵图像 (自动生成)
 ├── src/                     # 项目代码（模块化）
 │   ├── __init__.py
-│   ├── get_data.py          # 数据加载模块
+│   ├── get_data.py          # 数据加载模块 (支持动态保留性别特征)
 │   ├── preprocessing.py     # 数据预处理脚本 (清洗、编码、缺失值处理)
 │   ├── features.py          # PCA 与特征选择
-│   ├── models.py            # 模型定义与训练逻辑
-│   ├── train.py             # 主训练脚本
+│   ├── models.py            # 单标签模型基线测试
+│   ├── MultiOutputClassifier.py # 多输出分类器 (预测 ADHD 与 性别，生成 Markdown 报告)
+│   ├── ablation_study.py    # 性别特征消融实验 (分析性别对 ADHD 预测的影响)
 │   ├── pca_frmi.py          # fMRI PCA 降维脚本
 │   ├── ica_analysis.py      # fMRI ICA 分析脚本
+│   ├── export_ica_data.py   # 导出 ICA 特征
 │   └── utils.py             # 辅助工具
 ├── .gitignore
 ├── requirements.txt
@@ -111,16 +114,28 @@ python src/export_ica_data.py
 
 ### 3. 模型训练与评估 (Training)
 
-运行主训练脚本，加载处理后的数据并训练模型（SVM, Random Forest, XGBoost）。
+运行主训练脚本，加载处理后的数据并进行多标签/单标签预测。
+
+**多输出分类 (同时预测 ADHD 和 性别):**
+
+该脚本会自动生成分类报告、混淆矩阵图片，并汇总至 `reports/MultiOutput_Results.md`。
+
+```bash
+python src/MultiOutputClassifier.py
+```
+
+**性别特征消融实验:**
+
+该脚本用于分析是否剔除性别特征对 ADHD 预测性能的影响。
+
+```bash
+python src/ablation_study.py
+```
+
+**单标签基线模型测试:**
 
 ```bash
 python src/models.py
-```
-
-或者
-
-```bash
-python src/train.py
 ```
 
 ## 常见问题 (Troubleshooting)

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-def get_data():
+def get_data(keep_sex=False):
     # 读取categorical data文件，读取为一个DataFrame
     categorical_df = pd.read_csv("data/processed/cleaned_train_categorical_ohe.csv")
 
@@ -21,7 +21,11 @@ def get_data():
     X = []
     y1 = [] # ADHD_Outcome
     y2 = [] # Sex_F
-    drop_cols = ["participant_id", "Sex_F", "Basic_Demos_Enroll_Year"]
+    
+    if keep_sex:
+        drop_cols = ["participant_id", "Basic_Demos_Enroll_Year"]
+    else:
+        drop_cols = ["participant_id", "Sex_F", "Basic_Demos_Enroll_Year"]
     for pid in patient_ids:
         try:
             cat_data = categorical_df[categorical_df["participant_id"] == pid].drop(columns=drop_cols).values.flatten()
