@@ -18,7 +18,7 @@ ADHD_Female_Brain_Project/
 │   ├── preprocessing.py     # 数据预处理脚本 (清洗、编码、缺失值处理)
 │   ├── features.py          # PCA 与特征选择
 │   ├── models.py            # 单标签模型基线测试
-│   ├── MultiOutputClassifier.py # 多输出分类器 (预测 ADHD 与 性别，生成 Markdown 报告)
+│   ├── model_train.py       # 独立标签网格/随机搜索训练 (取代旧的 MultiOutputClassifier，分别预测 ADHD 和性别并生成 Markdown 报告)
 │   ├── ablation_study.py    # 性别特征消融实验 (分析性别对 ADHD 预测的影响)
 │   ├── pca_frmi.py          # fMRI PCA 降维脚本
 │   ├── ica_analysis.py      # fMRI ICA 分析脚本
@@ -116,12 +116,12 @@ python src/export_ica_data.py
 
 运行主训练脚本，加载处理后的数据并进行多标签/单标签预测。
 
-**多输出分类 (同时预测 ADHD 和 性别):**
+**独立标签模型训练 (分别预测 ADHD 和 性别):**
 
-该脚本会自动生成分类报告、混淆矩阵图片，并汇总至 `reports/MultiOutput_Results.md`。
+该脚本取代了旧的 `MultiOutputClassifier.py`。它针对每个标签执行独立的随机搜索（RandomizedSearch），寻找各自的最优参数，并自动生成分类报告、混淆矩阵图片，汇总至 `reports/SingleLabel_RandomizedSearch_Results.md`。
 
 ```bash
-python src/MultiOutputClassifier.py
+python src/model_train.py
 ```
 
 **性别特征消融实验:**
