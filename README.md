@@ -46,6 +46,12 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
+**Windows (CMD):**
+```cmd
+python -m venv .venv
+.venv\Scripts\activate.bat
+```
+
 ### 2. 安装依赖
 
 ```bash
