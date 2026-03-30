@@ -179,8 +179,8 @@ def fill_quantitative(train_q, train_cat, group_cols, skip_fill_cols=None): # �
             merged[c] = merged[c].fillna(gm)
             audit["quantitative"]["strategy"][c] = {"group": group_cols, "group_median_used": int(m), "global_median": float(gm) if not np.isnan(gm) else None}
     base_cols = [c for c in train_q.columns if c != "participant_id"]
-    ind_cols = [c for c in merged.columns if c.endswith("__missing_ind")]
-    cols = ["participant_id"] + base_cols + ind_cols
+    # 移除 ind_cols 的收集，只保留基础特征列
+    cols = ["participant_id"] + base_cols
     return merged[cols], audit, group_stats, global_medians
 
 def finalize_no_nan_quant(df, global_medians): # 填充DataFrame中的缺失值，根据全局中位数填充，返回填充后的DataFrame和审计信息。
@@ -241,10 +241,10 @@ def one_hot_encode(train_cat_df): # 对DataFrame中的分类变量进行独热�
     # Get the excluded columns that actually exist in the dataframe to keep them intact
     kept_cols = [c for c in exclude_from_ohe if c in train_cat_df.columns]
     
-    # Concatenate: participant_id + kept original columns + one-hot features + missing indicators
-    comb_out = pd.concat([train_cat_df[["participant_id"] + kept_cols], encoded_df, train_cat_df[ind_cols]], axis=1)
+    # Concatenate: participant_id + kept original columns + one-hot features (移除 missing indicators)
+    comb_out = pd.concat([train_cat_df[["participant_id"] + kept_cols], encoded_df], axis=1)
     
-    return comb_out, {"columns": base_cols, "indicator_columns": ind_cols, "features": list(encoded_df.columns)}
+    return comb_out, {"columns": base_cols, "indicator_columns": [], "features": list(encoded_df.columns)}
 
 def preprocess(root=".", outdir="cleaned_data", use_mice=True, mice_min_ratio=0.05, mice_max_ratio=0.4, input_dir="data/raw"):
     root = os.path.abspath(root)

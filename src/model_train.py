@@ -95,6 +95,8 @@ models_config = {
     }
 }
 
+from advanced_cm import plot_advanced_confusion_matrix
+
 # 3. Helper Functions
 def evaluate_and_plot_cm(y_true, y_pred, label_name, model_name):
     acc = accuracy_score(y_true, y_pred)
@@ -105,35 +107,20 @@ def evaluate_and_plot_cm(y_true, y_pred, label_name, model_name):
     print(f"  - F1 Score (Positive Class): {f1_pos:.4f}")
     print(f"  - F1 Score (Macro): {f1_mac:.4f}")
     
-    cm = confusion_matrix(y_true, y_pred)
-    
-    # Calculate percentages relative to the total number of samples
-    cm_percentage = cm.astype('float') / cm.sum()
-    
-    plt.figure(figsize=(6, 4))
-    
     if label_name == "ADHD_Outcome":
-        labels = ["Non-ADHD (0)", "ADHD (1)"]
+        labels = ["Non-ADHD", "ADHD"]
     elif label_name == "Sex_F":
-        labels = ["Male (0)", "Female (1)"]
+        labels = ["Male", "Female"]
     else:
         labels = ["0", "1"]
         
-    # Create annotations that show both count and percentage
-    annot_data = [[f"{count}\n({percent:.1%})" for count, percent in zip(row_count, row_percent)] 
-                  for row_count, row_percent in zip(cm, cm_percentage)]
-        
-    sns.heatmap(cm_percentage, annot=annot_data, fmt="", cmap="Blues", 
-                xticklabels=labels, yticklabels=labels,
-                vmin=0, vmax=1) # Set scale from 0 to 1 for percentage
-    plt.xlabel("Predicted Label")
-    plt.ylabel("True Label")
-    plt.title(f"{model_name} - {label_name} Confusion Matrix")
+    save_dir = os.path.join("reports/Confusion_Matrix", label_name)
+    os.makedirs(save_dir, exist_ok=True)
+    save_path = os.path.join(save_dir, f"{model_name}_confusion_matrix.png")
     
-    os.makedirs("reports/Confusion_Matrix/SingleLabel", exist_ok=True)
-    save_path = os.path.join("reports/Confusion_Matrix/SingleLabel", f"{model_name}_{label_name}_confusion_matrix.png")
-    plt.savefig(save_path, dpi=300, bbox_inches="tight")
-    plt.close()
+    title = f"{model_name} - {label_name} Confusion Matrix"
+    plot_advanced_confusion_matrix(y_true, y_pred, labels, title, save_path)
+    
     return acc, f1_pos, f1_mac
 
 def generate_markdown_section(model_name, label_name, best_params, best_cv_score, acc, f1_pos, f1_mac):
