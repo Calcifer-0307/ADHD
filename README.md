@@ -93,7 +93,7 @@ python src/export_ica_data.py
 
 ### 3. 模型训练与评估 (Training & Evaluation)
 
-本项目包含多种机器学习模型（XGBoost, Random Forest, SVC, Logistic Regression, Decision Tree, Neural Network），并在评价体系中**重点关注 F1 Score (正类) 和 Macro F1**，以应对医疗数据中天然存在的类别不平衡问题。
+本项目包含多种机器学习模型（XGBoost, Random Forest, SVC, Logistic Regression, Decision Tree, Neural Network），并在测试集评价体系中**重点关注 F1 Score (Positive) 与 F1 Score (Negative)**，以同时量化正类检出能力与负类识别能力（网格搜索阶段仍使用 `f1_macro` 作为选择标准）。
 
 **主训练管线 (网格搜索与模型对比):**
 该脚本分别针对 `ADHD_Outcome` 和 `Sex_F` 执行随机网格搜索，寻找各自的最优参数，自动生成高级混淆矩阵，并汇总结果至 `reports/SingleLabel_RandomizedSearch_Results.md`。
@@ -102,7 +102,7 @@ python src/model_train.py
 ```
 
 **特征消融实验 (Feature Ablation Study):**
-基于 `model_train.py` 中 XGBoost 的最优参数，通过严格控制变量，分别测试“分类特征”、“量化特征”、“fMRI特征”及其不同组合对 ADHD 和性别预测的贡献度，结果输出至 `reports/Ablation_Study_Results.md`。
+基于 `model_train.py` 中 XGBoost 的最优参数，按 `ADHD_Outcome` 与 `Sex_F` 两个 label 分别加载各自最佳参数，并测试“分类特征”、“量化特征”、“fMRI特征”及其不同组合对预测性能的贡献度，结果输出至 `reports/Ablation_Study_Results.md`。
 ```bash
 python src/ablation_study.py
 ```
@@ -111,5 +111,4 @@ python src/ablation_study.py
 
 - **数据对齐问题**: 在进行自定义特征切片时，请务必统一使用 `src/get_data.py` 中的逻辑获取 `X` 和 `y`，避免使用 `pd.merge` 的内连接导致样本无声丢失，从而破坏验证集的分布一致性。
 - **Windows 编码问题**: 如果遇到 `UnicodeDecodeError`，请尝试在打开文件时指定 `encoding='utf-8'`。
-- **评价指标选择**: 请勿仅参考 `Accuracy`（准确率），在不平衡数据下，高准确率可能伴随极高的漏诊率。请以生成的 Markdown 报告中的 `F1(Positive)` 和混淆矩阵边缘的 `Recall`/`Precision` 为核心评价标准。
-
+- **评价指标选择**: 请勿仅参考 `Accuracy`（准确率），在不平衡数据下，高准确率可能伴随极高的漏诊率。请以生成报告中的 `F1(Positive)`、`F1(Negative)`，以及混淆矩阵边缘的 `Recall`/`Precision` 作为核心评价标准。
