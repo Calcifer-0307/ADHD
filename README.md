@@ -15,6 +15,7 @@ ADHD_Female_Brain_Project/
 │   ├── SingleLabel_RandomizedSearch_Results.md    # 模型网格搜索最佳参数与性能报告
 │   ├── SingleLabel_RandomizedSearch_Summary_Table.md # 单标签结果汇总表
 │   └── Confusion_Matrix/                          # 按目标标签分类的高级混淆矩阵图像
+├── output/                  # 临时输出目录 (存放 PCA 可视化图表等)
 ├── scripts/                 # 命令行训练入口脚本
 │   └── train_model.py       # 基于 CSV 输入的训练脚本
 ├── src/                     # 核心项目代码（模块化）
@@ -25,7 +26,7 @@ ADHD_Female_Brain_Project/
 │   ├── model_train.py       # 模型训练主脚本 (单标签独立网格搜索、随机森林/XGBoost等6种模型对比)
 │   ├── ablation_study.py    # 特征消融实验 (量化Categorical, Quantitative, fMRI三大模块的贡献)
 │   ├── advanced_cm.py       # 高级混淆矩阵可视化工具 (含精确率、召回率、FDR、FNR等边缘统计)
-│   ├── pca_frmi.py          # fMRI PCA 降维脚本
+│   ├── pca_fmri.py          # fMRI PCA 降维脚本 (支持合并训练/测试集统一降维)
 │   ├── ica_analysis.py      # fMRI ICA 分析脚本
 │   └── export_ica_data.py   # 导出 ICA 特征
 ├── requirements.txt         # 项目依赖库列表
@@ -87,13 +88,19 @@ brew install libomp
 python src/preprocessing.py --input_dir data/raw --outdir data/processed
 ```
 
-### 2. fMRI 特征提取 (ICA/PCA)
+### 2. fMRI 特征提取 (PCA + ICA)
 
-对高维的 fMRI 功能连接矩阵进行独立成分分析 (ICA) 降维，提取最具代表性的脑网络特征：
+对高维的 fMRI 功能连接矩阵进行分步降维。为了保证特征空间的统一性，流程如下：
 
-```bash
-python src/export_ica_data.py
-```
+1.  **合并与 PCA**: 运行 `pca_fmri.py`，将训练集 (1208 样本) 与测试集 (304 样本) 合并为 1512*19900 的矩阵，进行标准化后执行 PCA 降维至 **500 维**。生成的方差分析图表将保存至 `output/`。
+    ```bash
+    python src/pca_fmri.py
+    ```
+2.  **ICA 进一步降维**: 运行 `export_ica_data.py`，对 PCA 后的 500 维特征进行独立成分分析 (ICA)，进一步压缩至 **100 维**。
+3.  **拆分数据集**: 降维完成后，脚本会自动将 1512 个样本拆回原始的训练集和测试集比例，并保存为最终的特征文件。
+    ```bash
+    python src/export_ica_data.py
+    ```
 
 ### 3. 模型训练与评估 (Training & Evaluation)
 

@@ -4,7 +4,7 @@ __all__ = [
     "features",
     "models",
     "utils",
-    "pca_frmi",
+    "pca_fmri",
     "ica_analysis",
     "export_ica_data",
 ]
