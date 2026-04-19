@@ -8,7 +8,8 @@
 ADHD_Female_Brain_Project/
 ├── data/                    # 数据目录（不参与 Git 同步）
 │   ├── raw/                 # 原始 Excel/CSV 数据 (需手动放入)
-│   └── processed/           # 清洗、插补、编码及降维后的特征文件 (自动生成)
+│   ├── processed/           # 清洗、插补、编码后的特征文件 (自动生成)
+│   └── reduced/             # 专门存放 PCA/ICA 降维后的特征数据 (自动生成)
 ├── notebooks/               # 探索性实验 Jupyter Notebooks
 ├── reports/                 # 实验报告和高质量混淆矩阵图像 (自动生成)
 │   ├── Ablation_Study_Results.md                  # 特征消融实验报告
@@ -92,12 +93,12 @@ python src/preprocessing.py --input_dir data/raw --outdir data/processed
 
 对高维的 fMRI 功能连接矩阵进行分步降维。为了保证特征空间的统一性，流程如下：
 
-1.  **合并与 PCA**: 运行 `pca_fmri.py`，将训练集 (1208 样本) 与测试集 (304 样本) 合并为 1512*19900 的矩阵，进行标准化后执行 PCA 降维至 **500 维**。生成的方差分析图表将保存至 `output/`。
+1.  **合并与 PCA**: 运行 `pca_fmri.py`，将训练集 (1208 样本) 与测试集 (304 样本) 合并为 1512*19900 的矩阵，进行标准化后执行 PCA 降维至 **500 维**。生成的中间结果保存至 `data/reduced/`，方差分析图表将保存至 `output/`。
     ```bash
     python src/pca_fmri.py
     ```
 2.  **ICA 进一步降维**: 运行 `export_ica_data.py`，对 PCA 后的 500 维特征进行独立成分分析 (ICA)，进一步压缩至 **100 维**。
-3.  **拆分数据集**: 降维完成后，脚本会自动将 1512 个样本拆回原始的训练集和测试集比例，并保存为最终的特征文件。
+3.  **拆分数据集**: 降维完成后，脚本会自动将 1512 个样本拆回原始的训练集和测试集比例（1208 训练/验证, 304 测试），并保存为最终的特征文件至 `data/reduced/`。
     ```bash
     python src/export_ica_data.py
     ```

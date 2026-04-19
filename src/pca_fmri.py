@@ -163,7 +163,10 @@ result_df.insert(0, 'participant_id', patient_ids.values)
 
 # 合并保存
 variance_percent = np.sum(pca_final.explained_variance_ratio_) * 100
-output_file = f'data/processed/fMRI_PCA_{recommended_dim}d_combined.csv'
+output_dir_data = 'data/reduced'
+if not os.path.exists(output_dir_data):
+    os.makedirs(output_dir_data)
+output_file = os.path.join(output_dir_data, f'fMRI_PCA_{recommended_dim}d_combined.csv')
 result_df.to_csv(output_file, index=False)
 
 print("\n" + "="*70)
