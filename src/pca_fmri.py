@@ -5,32 +5,43 @@
 print("Starting fMRI PCA with visualization...")
 
 import sys
-sys.path.append('D:\\PythonLibs')
+# sys.path.append('D:\\PythonLibs')
 
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-print("[1/6] Loading sample data...")
+print("[1/6] Loading data...")
 try:
-    data_sample = pd.read_csv('data/processed/cleaned_train_connectome.csv', nrows=1000)
-    print(f"  ✓ Loaded: {data_sample.shape[0]} samples, {data_sample.shape[1]} features")
+    # 加载训练集 (1208 samples)
+    train_data = pd.read_csv('data/processed/cleaned_train_connectome.csv')
+    print(f"  ✓ Loaded training data: {train_data.shape[0]} samples, {train_data.shape[1]} features")
+    
+    # 加载测试集 (304 samples)
+    test_data = pd.read_csv('data/raw/TEST_FUNCTIONAL_CONNECTOME_MATRICES.csv')
+    print(f"  ✓ Loaded test data: {test_data.shape[0]} samples, {test_data.shape[1]} features")
+    
+    # 合并数据集 (1208 + 304 = 1512)
+    combined_data = pd.concat([train_data, test_data], axis=0, ignore_index=True)
+    print(f"  ✓ Combined data: {combined_data.shape[0]} samples, {combined_data.shape[1]} features")
+    
 except Exception as e:
-    print(f"  ✗ Error: {e}")
-    input("Press Enter to exit...")
+    print(f"  ✗ Error loading data: {e}")
     exit()
 
-patient_ids = data_sample['participant_id']
-features_sample = data_sample.drop('participant_id', axis=1)
-original_features = features_sample.shape[1]
+patient_ids = combined_data['participant_id']
+features_combined = combined_data.drop('participant_id', axis=1)
+original_features = features_combined.shape[1]
 
 print("[2/6] Standardizing data...")
 scaler = StandardScaler()
-features_scaled = scaler.fit_transform(features_sample)
+features_scaled = scaler.fit_transform(features_combined)
 
 print("[3/6] Running full PCA analysis...")
+# 因为样本数较少 (1512)，我们可以直接对全量数据进行 PCA
 pca_full = PCA()
 pca_full.fit(features_scaled)
 
@@ -76,8 +87,8 @@ plt.title('PCA: How Many Dimensions for How Much Variance?', fontsize=12, fontwe
 plt.grid(True, alpha=0.3)
 
 # 标记关键点
-marker_percents = [50, 75, 85, 90, 95]
-colors = ['green', 'blue', 'orange', 'red', 'purple']
+marker_percents = [50, 75, 80, 85, 90, 95]
+colors = ['green', 'blue', 'cyan', 'orange', 'red', 'purple']
 
 for percent, color in zip(marker_percents, colors):
     if percent in dim_results:
@@ -113,7 +124,12 @@ for bar, dim in zip(bars, dimensions):
 plt.tight_layout()
 
 # 保存图表
-chart_file = 'PCA_Variance_Analysis_Chart.png'
+output_dir = 'output'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+    print(f"  ✓ Created directory: {output_dir}")
+
+chart_file = os.path.join(output_dir, 'PCA_Variance_Analysis_Chart.png')
 plt.savefig(chart_file, dpi=150, bbox_inches='tight')
 print(f"  ✓ Chart saved as: {chart_file}")
 
@@ -128,51 +144,26 @@ print("  1. 499 dimensions → 85% variance (balanced, recommended)")
 print("  2. 615 dimensions → 90% variance (higher quality)")
 print("  3. 406 dimensions → 80% variance (more efficient)")
 
-# 自动选择85%
+# 自动选择 500 维 (或 85% 变异度推荐的维度)
 target_percent = 85
-recommended_dim = dim_results.get(target_percent, 500)
+recommended_dim = 500 # 强制指定为 500 维，如用户要求
 
-print(f"\n[5/6] Using {recommended_dim} dimensions ({target_percent}% variance)...")
+print(f"\n[5/6] Using {recommended_dim} dimensions...")
 
 # 训练最终PCA
 pca_final = PCA(n_components=recommended_dim)
-pca_final.fit(features_scaled)
+pca_transformed = pca_final.fit_transform(features_scaled)
 
-print("[6/6] Processing full dataset...")
+print("[6/6] Saving combined PCA results...")
 
-# 分块处理
-chunksize = 1000
-all_chunks = []
-total_processed = 0
-
-try:
-    for chunk_idx, chunk in enumerate(pd.read_csv('data/processed/cleaned_train_connectome.csv', 
-                                                  chunksize=chunksize)):
-        chunk_ids = chunk['participant_id']
-        chunk_features = chunk.drop('participant_id', axis=1)
-        
-        chunk_scaled = scaler.transform(chunk_features)
-        chunk_pca = pca_final.transform(chunk_scaled)
-        
-        chunk_df = pd.DataFrame(chunk_pca)
-        chunk_df.columns = [f'PC{i+1}' for i in range(recommended_dim)]
-        chunk_df.insert(0, 'participant_id', chunk_ids.values)
-        
-        all_chunks.append(chunk_df)
-        total_processed += len(chunk_df)
-        
-        if (chunk_idx + 1) % 5 == 0:
-            print(f"  Processed {total_processed} rows...")
-            
-except Exception as e:
-    print(f"  ✗ Error during processing: {e}")
-    input("Press Enter to exit...")
-    exit()
+# 创建 DataFrame
+result_df = pd.DataFrame(pca_transformed)
+result_df.columns = [f'PC{i+1}' for i in range(recommended_dim)]
+result_df.insert(0, 'participant_id', patient_ids.values)
 
 # 合并保存
-result_df = pd.concat(all_chunks, ignore_index=True)
 variance_percent = np.sum(pca_final.explained_variance_ratio_) * 100
-output_file = f'data/processed/fMRI_PCA_{recommended_dim}d_{int(variance_percent)}p.csv'
+output_file = f'data/processed/fMRI_PCA_{recommended_dim}d_combined.csv'
 result_df.to_csv(output_file, index=False)
 
 print("\n" + "="*70)
