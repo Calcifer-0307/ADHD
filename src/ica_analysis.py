@@ -2,26 +2,31 @@ print("=== fMRI Data ICA Analysis ===")
 
 import pandas as pd
 import numpy as np
+import os
 from sklearn.decomposition import FastICA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 
-print("\n[1/4] Loading data...")
+print("\n[1/4] Loading PCA data and labels...")
 
-connectome_file = 'data/processed/cleaned_train_connectome.csv'
-df_connectome = pd.read_csv(connectome_file)
-print(f"  Connectome data: {df_connectome.shape}")
+# 加载 PCA 降维后的合并数据 (1512 samples, 500 dims)
+pca_file = 'data/reduced/fMRI_PCA_500d_combined.csv'
+df_pca = pd.read_csv(pca_file)
+print(f"  PCA combined data: {df_pca.shape}")
 
-# 加载标签
+# 加载训练集标签 (仅包含 1208 个有标签的样本)
 df_labels = pd.read_csv('data/processed/cleaned_train_solutions.csv')
 print(f"  Labels: {df_labels.shape}")
 
-# 合并
-data = pd.merge(df_connectome, df_labels, on='participant_id')
+# 合并标签 (自动过滤掉没有标签的 304 个测试样本)
+data = pd.merge(df_pca, df_labels, on='participant_id')
+print(f"  Data with labels for analysis: {data.shape}")
 
 # Set random seed for reproducibility
 np.random.seed(42)
 
+# 准备特征 X (去掉 ID 和标签列)
+# 这里根据实际列名调整，假设 df_labels 包含 Sex_F 等标签
 X = data.drop(['participant_id', 'Sex_F'], axis=1).values
 y = data['Sex_F'].values
 
@@ -30,7 +35,7 @@ print(f"  Features: {X.shape[1]}, Samples: {X.shape[0]}")
 print("\n[2/4] Testing different ICA dimensions...")
 
 # 要测试的ICA维度
-ica_dims = [20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 150]
+ica_dims = [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150]
 results = []
 
 from sklearn.model_selection import train_test_split
@@ -91,10 +96,19 @@ plt.plot(dims, test_acc, 'r-o', label='Test (ICA)')
 plt.xlabel('ICA Components')
 plt.ylabel('Accuracy')
 plt.title('ICA Performance vs Number of Components')
+plt.xlim(0, 160)
+plt.ylim(0, 1.0)
 plt.legend()
-plt.grid(True)
-plt.savefig('ica_results.png')
-print("\n Chart saved: ica_results.png")
+plt.grid(True, alpha=0.3)
+
+# 确保 output 目录存在
+output_dir = 'output'
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+
+output_plot = os.path.join(output_dir, 'ica_result.png')
+plt.savefig(output_plot)
+print(f"\n Chart saved: {output_plot}")
 
 # 分析ICA成分的独立性
 print("\n[3/4] Analyzing component independence...")
@@ -127,5 +141,4 @@ else:
     print(f" ICA needs {best['dim']} components, similar to PCA.")
     print(f"   In this case, stick with PCA for simplicity.")
 
-print("\nPress Enter to exit...")
-input()
+print("\nICA Analysis Complete!")

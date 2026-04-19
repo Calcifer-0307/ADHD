@@ -88,7 +88,7 @@ plt.grid(True, alpha=0.3)
 
 # 标记关键点
 marker_percents = [50, 75, 80, 85, 90, 95]
-colors = ['green', 'blue', 'cyan', 'orange', 'red', 'purple']
+colors = ['green', 'blue', 'teal', 'orange', 'red', 'purple']
 
 for percent, color in zip(marker_percents, colors):
     if percent in dim_results:
