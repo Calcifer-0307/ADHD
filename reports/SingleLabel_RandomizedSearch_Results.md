@@ -10,7 +10,7 @@
 - **Best CV F1 Score (Macro):** `0.7320`
 - **Test Accuracy:** `0.7810`
 - **Test F1 Score (Positive Class):** `0.8499`
-- **Test F1 Score (Macro):** `0.7226`
+- **Test F1 Score (Negative Class):** `0.5954`
 
 ### Model: XGBoost
 
@@ -18,7 +18,7 @@
 - **Best CV F1 Score (Macro):** `0.7466`
 - **Test Accuracy:** `0.8058`
 - **Test F1 Score (Positive Class):** `0.8669`
-- **Test F1 Score (Macro):** `0.7540`
+- **Test F1 Score (Negative Class):** `0.6412`
 
 ### Model: SVC
 
@@ -26,7 +26,7 @@
 - **Best CV F1 Score (Macro):** `0.7046`
 - **Test Accuracy:** `0.7149`
 - **Test F1 Score (Positive Class):** `0.7928`
-- **Test F1 Score (Macro):** `0.6679`
+- **Test F1 Score (Negative Class):** `0.5430`
 
 ### Model: LogisticRegression
 
@@ -34,7 +34,7 @@
 - **Best CV F1 Score (Macro):** `0.7219`
 - **Test Accuracy:** `0.7479`
 - **Test F1 Score (Positive Class):** `0.8076`
-- **Test F1 Score (Macro):** `0.7212`
+- **Test F1 Score (Negative Class):** `0.6347`
 
 ### Model: DecisionTree
 
@@ -42,7 +42,7 @@
 - **Best CV F1 Score (Macro):** `0.6957`
 - **Test Accuracy:** `0.7603`
 - **Test F1 Score (Positive Class):** `0.8199`
-- **Test F1 Score (Macro):** `0.7309`
+- **Test F1 Score (Negative Class):** `0.6420`
 
 ### Model: NeuralNetwork
 
@@ -50,7 +50,7 @@
 - **Best CV F1 Score (Macro):** `0.6805`
 - **Test Accuracy:** `0.7438`
 - **Test F1 Score (Positive Class):** `0.8218`
-- **Test F1 Score (Macro):** `0.6830`
+- **Test F1 Score (Negative Class):** `0.5441`
 
 ---
 
@@ -62,7 +62,7 @@
 - **Best CV F1 Score (Macro):** `0.5653`
 - **Test Accuracy:** `0.6942`
 - **Test F1 Score (Positive Class):** `0.3148`
-- **Test F1 Score (Macro):** `0.5590`
+- **Test F1 Score (Negative Class):** `0.8032`
 
 ### Model: XGBoost
 
@@ -70,7 +70,7 @@
 - **Best CV F1 Score (Macro):** `0.7069`
 - **Test Accuracy:** `0.8058`
 - **Test F1 Score (Positive Class):** `0.6667`
-- **Test F1 Score (Macro):** `0.7648`
+- **Test F1 Score (Negative Class):** `0.8630`
 
 ### Model: SVC
 
@@ -78,7 +78,7 @@
 - **Best CV F1 Score (Macro):** `0.6765`
 - **Test Accuracy:** `0.6736`
 - **Test F1 Score (Positive Class):** `0.5093`
-- **Test F1 Score (Macro):** `0.6324`
+- **Test F1 Score (Negative Class):** `0.7554`
 
 ### Model: LogisticRegression
 
@@ -86,7 +86,7 @@
 - **Best CV F1 Score (Macro):** `0.6841`
 - **Test Accuracy:** `0.6694`
 - **Test F1 Score (Positive Class):** `0.5556`
-- **Test F1 Score (Macro):** `0.6462`
+- **Test F1 Score (Negative Class):** `0.7368`
 
 ### Model: DecisionTree
 
@@ -94,7 +94,7 @@
 - **Best CV F1 Score (Macro):** `0.6600`
 - **Test Accuracy:** `0.7521`
 - **Test F1 Score (Positive Class):** `0.6552`
-- **Test F1 Score (Macro):** `0.7308`
+- **Test F1 Score (Negative Class):** `0.8065`
 
 ### Model: NeuralNetwork
 
@@ -102,7 +102,7 @@
 - **Best CV F1 Score (Macro):** `0.6655`
 - **Test Accuracy:** `0.6529`
 - **Test F1 Score (Positive Class):** `0.4400`
-- **Test F1 Score (Macro):** `0.5943`
+- **Test F1 Score (Negative Class):** `0.7485`
 
 ---
 

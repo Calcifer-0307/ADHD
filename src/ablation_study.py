@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
@@ -37,11 +36,30 @@ combinations = {
     "All Features": list(range(X.shape[1])) # 所有列
 }
 
+# 4. 对照单标签训练报告，为两个 target 分别使用各自最优的 XGBoost 参数
+best_xgb_params = {
+    "ADHD_Outcome": {
+        "subsample": 0.8,
+        "n_estimators": 100,
+        "max_depth": 3,
+        "learning_rate": 0.05,
+        "colsample_bytree": 1.0,
+    },
+    "Sex_F": {
+        "subsample": 1.0,
+        "n_estimators": 500,
+        "max_depth": 7,
+        "learning_rate": 0.1,
+        "colsample_bytree": 0.8,
+    },
+}
+
 def run_ablation(target_name, y_target):
-    print("="*70)
+    print("="*82)
     print(f"特征消融实验 (XGBoost 预测 {target_name})")
-    print(f"{'特征组合':<20} | {'Acc':<10} | {'F1(Positive)':<15} | {'F1(Macro)':<10}")
-    print("-" * 70)
+    print(f"{'特征组合':<20} | {'Acc':<10} | {'F1(Positive)':<15} | {'F1(Negative)':<15}")
+    print("-" * 82)
+    params = best_xgb_params[target_name]
 
     for name, cols in combinations.items():
         # 根据组合切片提取特定的特征列
@@ -55,26 +73,26 @@ def run_ablation(target_name, y_target):
             X_scaled, y_target, test_size=0.2, random_state=42 # 移除 stratify，与 model_train.py 保持完全一致的随机切分
         )
         
-        # 控制变量保持模型参数一致
+        # 针对不同 label 使用各自在单标签训练中搜索出的最优参数
         clf = XGBClassifier(
             random_state=42, 
             eval_metric='logloss',
-            subsample=1.0,
-            n_estimators=500,
-            max_depth=5,
-            learning_rate=0.2,
-            colsample_bytree=0.8
+            subsample=params["subsample"],
+            n_estimators=params["n_estimators"],
+            max_depth=params["max_depth"],
+            learning_rate=params["learning_rate"],
+            colsample_bytree=params["colsample_bytree"]
         )
         clf.fit(X_train, y_train)
         y_pred = clf.predict(X_test)
         
         acc = accuracy_score(y_test, y_pred)
-        f1_pos = f1_score(y_test, y_pred, zero_division=0)
-        f1_mac = f1_score(y_test, y_pred, average='macro', zero_division=0)
+        f1_pos = f1_score(y_test, y_pred, pos_label=1, zero_division=0)
+        f1_neg = f1_score(y_test, y_pred, pos_label=0, zero_division=0)
         
-        print(f"{name:<20} | {acc:<10.4f} | {f1_pos:<15.4f} | {f1_mac:<10.4f}")
-    print("="*70 + "\n")
+        print(f"{name:<20} | {acc:<10.4f} | {f1_pos:<15.4f} | {f1_neg:<15.4f}")
+    print("="*82 + "\n")
 
-# 4. 分别对 ADHD 和 Sex_F 运行消融实验
+# 5. 分别对 ADHD 和 Sex_F 运行消融实验
 run_ablation("ADHD_Outcome", y_adhd)
-run_ablation("Sex_F (Gender)", y_sex)
+run_ablation("Sex_F", y_sex)

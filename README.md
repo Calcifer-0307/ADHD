@@ -13,9 +13,13 @@ ADHD_Female_Brain_Project/
 ├── reports/                 # 实验报告和高质量混淆矩阵图像 (自动生成)
 │   ├── Ablation_Study_Results.md                  # 特征消融实验报告
 │   ├── SingleLabel_RandomizedSearch_Results.md    # 模型网格搜索最佳参数与性能报告
+│   ├── SingleLabel_RandomizedSearch_Summary_Table.md # 单标签结果汇总表
 │   └── Confusion_Matrix/                          # 按目标标签分类的高级混淆矩阵图像
+├── scripts/                 # 命令行训练入口脚本
+│   └── train_model.py       # 基于 CSV 输入的训练脚本
 ├── src/                     # 核心项目代码（模块化）
 │   ├── __init__.py
+│   ├── baseline_models.py   # 基线多输出模型封装
 │   ├── get_data.py          # 数据加载与特征拼接模块 (保证全流程数据对齐)
 │   ├── preprocessing.py     # 数据预处理脚本 (数据清洗、MICE多重插补、One-Hot编码)
 │   ├── model_train.py       # 模型训练主脚本 (单标签独立网格搜索、随机森林/XGBoost等6种模型对比)
@@ -93,7 +97,7 @@ python src/export_ica_data.py
 
 ### 3. 模型训练与评估 (Training & Evaluation)
 
-本项目包含多种机器学习模型（XGBoost, Random Forest, SVC, Logistic Regression, Decision Tree, Neural Network），并在测试集评价体系中**重点关注 F1 Score (Positive) 与 F1 Score (Negative)**，以同时量化正类检出能力与负类识别能力（网格搜索阶段仍使用 `f1_macro` 作为选择标准）。
+本项目包含多种机器学习模型（XGBoost, Random Forest, SVC, Logistic Regression, Decision Tree, Neural Network），并结合高级混淆矩阵与消融实验，从多角度评估不同模态特征对两个目标标签的贡献。
 
 **主训练管线 (网格搜索与模型对比):**
 该脚本分别针对 `ADHD_Outcome` 和 `Sex_F` 执行随机网格搜索，寻找各自的最优参数，自动生成高级混淆矩阵，并汇总结果至 `reports/SingleLabel_RandomizedSearch_Results.md`。
@@ -101,14 +105,24 @@ python src/export_ica_data.py
 python src/model_train.py
 ```
 
+**结果汇总表:**
+为了便于横向比较不同模型在两个标签上的表现，项目还提供单表汇总文件：
+`reports/SingleLabel_RandomizedSearch_Summary_Table.md`
+
 **特征消融实验 (Feature Ablation Study):**
 基于 `model_train.py` 中 XGBoost 的最优参数，按 `ADHD_Outcome` 与 `Sex_F` 两个 label 分别加载各自最佳参数，并测试“分类特征”、“量化特征”、“fMRI特征”及其不同组合对预测性能的贡献度，结果输出至 `reports/Ablation_Study_Results.md`。
 ```bash
 python src/ablation_study.py
 ```
 
+**基线训练脚本:**
+若需要通过命令行直接读取特征 CSV 与目标 CSV 进行训练，可使用：
+```bash
+python scripts/train_model.py --features <features.csv> --targets <targets.csv>
+```
+
 ## 常见问题 (Troubleshooting)
 
 - **数据对齐问题**: 在进行自定义特征切片时，请务必统一使用 `src/get_data.py` 中的逻辑获取 `X` 和 `y`，避免使用 `pd.merge` 的内连接导致样本无声丢失，从而破坏验证集的分布一致性。
 - **Windows 编码问题**: 如果遇到 `UnicodeDecodeError`，请尝试在打开文件时指定 `encoding='utf-8'`。
-- **评价指标选择**: 请勿仅参考 `Accuracy`（准确率），在不平衡数据下，高准确率可能伴随极高的漏诊率。请以生成报告中的 `F1(Positive)`、`F1(Negative)`，以及混淆矩阵边缘的 `Recall`/`Precision` 作为核心评价标准。
+- **评价结果解读**: 请勿仅参考 `Accuracy`（准确率），在不平衡数据下，高准确率可能伴随较高的漏诊率。建议结合分类报告、汇总表与高级混淆矩阵共同判断模型表现。

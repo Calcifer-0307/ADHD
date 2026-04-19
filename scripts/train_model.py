@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from src.models import MultiOutputModel
+from src.baseline_models import MultiOutputModel
 
 
 def main():

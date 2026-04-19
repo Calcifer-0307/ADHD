@@ -100,12 +100,12 @@ from advanced_cm import plot_advanced_confusion_matrix
 # 3. Helper Functions
 def evaluate_and_plot_cm(y_true, y_pred, label_name, model_name):
     acc = accuracy_score(y_true, y_pred)
-    f1_pos = f1_score(y_true, y_pred, zero_division=0)
-    f1_mac = f1_score(y_true, y_pred, average='macro', zero_division=0)
+    f1_pos = f1_score(y_true, y_pred, pos_label=1, zero_division=0)
+    f1_neg = f1_score(y_true, y_pred, pos_label=0, zero_division=0)
     
     print(f"  - Accuracy: {acc:.4f}")
     print(f"  - F1 Score (Positive Class): {f1_pos:.4f}")
-    print(f"  - F1 Score (Macro): {f1_mac:.4f}")
+    print(f"  - F1 Score (Negative Class): {f1_neg:.4f}")
     
     if label_name == "ADHD_Outcome":
         labels = ["Non-ADHD", "ADHD"]
@@ -121,15 +121,15 @@ def evaluate_and_plot_cm(y_true, y_pred, label_name, model_name):
     title = f"{model_name} - {label_name} Confusion Matrix"
     plot_advanced_confusion_matrix(y_true, y_pred, labels, title, save_path)
     
-    return acc, f1_pos, f1_mac
+    return acc, f1_pos, f1_neg
 
-def generate_markdown_section(model_name, label_name, best_params, best_cv_score, acc, f1_pos, f1_mac):
+def generate_markdown_section(model_name, best_params, best_cv_score, acc, f1_pos, f1_neg):
     report = f"### Model: {model_name}\n\n"
     report += f"- **Best Parameters:** `{best_params}`\n"
     report += f"- **Best CV F1 Score (Macro):** `{best_cv_score:.4f}`\n"
     report += f"- **Test Accuracy:** `{acc:.4f}`\n"
     report += f"- **Test F1 Score (Positive Class):** `{f1_pos:.4f}`\n"
-    report += f"- **Test F1 Score (Macro):** `{f1_mac:.4f}`\n\n"
+    report += f"- **Test F1 Score (Negative Class):** `{f1_neg:.4f}`\n\n"
     return report
 
 # 4. Training and Evaluation Loop
@@ -171,17 +171,16 @@ for label_name, y_train, y_test in tasks:
         y_pred = best_model.predict(X_test)
         
         # 4.4 Evaluate and Print to Terminal
-        acc, f1_pos, f1_mac = evaluate_and_plot_cm(y_test, y_pred, label_name, model_name)
+        acc, f1_pos, f1_neg = evaluate_and_plot_cm(y_test, y_pred, label_name, model_name)
         
         # 4.5 Append Model Results to Markdown Report
         md_report += generate_markdown_section(
             model_name=model_name,
-            label_name=label_name,
             best_params=search.best_params_,
             best_cv_score=search.best_score_,
             acc=acc,
             f1_pos=f1_pos,
-            f1_mac=f1_mac
+            f1_neg=f1_neg
         )
     md_report += "---\n\n"
 
